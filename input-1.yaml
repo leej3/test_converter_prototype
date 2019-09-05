@@ -1,0 +1,28 @@
+env_vars:
+    - {"myenv": ["3", "58"]}
+    - {"OMP_NUM_THREADS": ["2"]} 
+inputs:
+    - [("indir"), (string), ["AFNI_demos/FATCAT_DEMO"]]
+    - [("param_stat"), (string), ["-mean", "-sd", "-median"]]
+execute: 
+  test_1:
+    label: "This is a test label"
+    command: bash,
+    script: 3dcopy {files} {output} {method}
+    tests: 
+     - {file: {out_fname}, name: regr, script: test_obj_eq.py}
+     - {file: {out_fname}, name: regr_diff, script: test_different.py}
+  test_2:
+    keywords: ["dti", "fast", "python"]
+    script: |
+      3dcopy {files2} {output2} {method}
+    tests:
+      - {file: {output2}, name: regr, script: test_obj_eq.py}
+  test_3:
+    script: |
+      3dBRIKSTAT -stat ${param_stat} -prefix {outfile}.nii.gz -infile {REST_proc_unfilt.nii.gz}"[4]" | grep "datavalues" > {outfile}_data.log
+    tests: 
+      - {file: {out_fname}, name: regr, script: test_obj_eq.py}
+    
+
+

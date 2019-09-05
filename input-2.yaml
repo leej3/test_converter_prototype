@@ -1,0 +1,29 @@
+label: "This is a fancy test (opt)?"
+keywords: ["dti", "fast", "python"]
+env_vars:
+    - {"myenv": ["3", "58"]}
+    - {"OMP_NUM_THREADS": ["2"]} 
+inputs:
+    - [("indir"), (string), ["AFNI_demos/FATCAT_DEMO"]]
+    - [("param_stat"), (string), ["-mean", "-sd", "-median"]]
+
+execute:
+    script:
+        3dBRIKSTAT                                                                      \
+        -stat ${param_stat[1]}                                                          \
+        -prefix {outfile}.nii.gz                                                        \
+        -infile ${indir}/{REST_proc_unfilt.nii.gz}"[4]" |                               \
+        grep "datavalues" > {outfile}_data.log
+    tests:
+     - {
+        file: {outfile},
+        name: regr,
+        script: test_obj_eq.py,
+        args: ["{outfile}_data.log", "--tolerance", "5e4", "--ignore-regex", "Execution time"]
+        }
+     - {file: {outfile}, 
+        name: regr_diff, 
+        script: test_different.py, 
+        args: ["--tolerance", "5e4", --ignore-regex, "Execution time", "*_data.logs"]
+        }
+
